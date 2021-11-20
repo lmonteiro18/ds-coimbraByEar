@@ -1,10 +1,30 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-  </head>
-  <body>
-    <h1>Olá</h1>
-  </body>
+
+<head>
+  <meta charset="utf-8">
+
+  <!-- A-frame script -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <!-- Environent Component -->
+  <script src="https://unpkg.com/aframe-environment-component@1.1.0/dist/aframe-environment-component.min.js"></script>
+  <!-- Ocean Component-->
+  <script src="https://cdn.rawgit.com/donmccurdy/aframe-extras/v4.0.2/dist/aframe-extras.min.js"></script>
+  <!-- Particle System Component-->
+  <script src="https://unpkg.com/aframe-particle-system-component@1.0.x/dist/aframe-particle-system-component.min.js"></script>
+
+  <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+  <title>Coimbra By Ear</title>
+</head>
+
+<body>
+  <a-scene>
+    <a-camera wasd-controls-enabled="false">
+      <a-cursor></a-cursor>
+    </a-camera>
+
+    <a-circle position="0 1.6 -5" radius="2" side="double"></a-circle>
+  </a-scene>
+</body>
+
 </html>
