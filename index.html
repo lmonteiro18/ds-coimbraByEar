@@ -5,25 +5,59 @@
   <meta charset="utf-8">
 
   <!-- A-frame script -->
-  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://aframe.io/releases/1.1.0/aframe.min.js"></script>
+
   <!-- Environent Component -->
   <script src="https://unpkg.com/aframe-environment-component@1.1.0/dist/aframe-environment-component.min.js"></script>
-  <!-- Ocean Component-->
-  <script src="https://cdn.rawgit.com/donmccurdy/aframe-extras/v4.0.2/dist/aframe-extras.min.js"></script>
-  <!-- Particle System Component-->
-  <script src="https://unpkg.com/aframe-particle-system-component@1.0.x/dist/aframe-particle-system-component.min.js"></script>
 
+  <!-- Look At Component -->
   <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+
+  <!-- Webcentric Component -->
+  <script src="https://unpkg.com/aframe-webcentric-component/dist/aframe-webcentric-component.min.js"></script>
+
+  <!-- Event-set Component -->
+  <script src="https://unpkg.com/aframe-event-set-component/dist/aframe-event-set-component.min.js"></script>
+
   <title>Coimbra By Ear</title>
 </head>
 
 <body>
-  <a-scene>
-    <a-camera wasd-controls-enabled="false">
-      <a-cursor></a-cursor>
-    </a-camera>
+  <a-scene webcentric cursor="rayOrigin: mouse">
+    <a-entity id="camerarig">
+      <a-camera id="camera" wasd-controls-enabled="false">
+        <a-cursor></a-cursor>
+      </a-camera>
+    </a-entity>
 
-    <a-circle position="0 1.6 -5" radius="2" side="double" color="red"></a-circle>
+    <a-assets>
+      <img id="praca8Maio" src="images/praca_8Maio.png"></img>
+      <img id="jardimBotanico" src="images/jardimBotanico.png"></img>
+    </a-assets>
+
+    <a-entity position="0 0 0">
+      <a-entity position="0 0 0">
+        <a-link href="#cameraPos=-10000,0,0" link="visualAspectEnabled:false" position="-2 1.6 -8" rotation="0 0 0" scale="1 1 1" src="#praca8Maio">
+          <a-sphere src="#praca8Maio" radius="1"></a-sphere>
+          <a-text align="center" position="0 1.5 0" value="Praca 8 de Maio"></a-text>
+        </a-link>
+      </a-entity>
+      <a-entity position="0 0 0">
+        <a-link href="#cameraPos=10000,0,0" link="visualAspectEnabled:false" position="2 1.6 -8" rotation="0 0 0" scale="1 1 1" src="#praca8Maio">
+          <a-sphere src="#jardimBotanico" radius="1"></a-sphere>
+          <a-text align="center" position="0 1.5 0" value="Jardim Botanico"></a-text>
+        </a-link>
+      </a-entity>
+      <a-sky color="lightblue"></a-sky>
+    </a-entity>
+
+    <a-entity position="-10000 0 0">
+      <a-sky src="#praca8Maio"></a-sky>
+    </a-entity>
+
+    <a-entity position="10000 0 0">
+      <a-sky src="#jardimBotanico"></a-sky>
+    </a-entity>
   </a-scene>
 </body>
 
