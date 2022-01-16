@@ -156,6 +156,9 @@ for (let i = 0; i < files.length; i++) {
   player.loop = true;
   player.toDestination();
   players.push(player);
+
+  let panner = new Tone.Panner(0).toDestination();
+  panners.push(panner);
 }
 
 for (let i = 0; i < files.length; i++) {
@@ -211,7 +214,8 @@ startButton.addEventListener("click", async () => {
     calculatePan();
     players.forEach((player, i) => {
 
-      let panner = new Tone.Panner(panValues[i]).toDestination();
+      //let panner = new Tone.Panner(panValues[i]).toDestination();
+      panners[i].pan = panValues[i];
 
       let reverb = new Tone.Reverb({
         decay: 2,
@@ -220,7 +224,7 @@ startButton.addEventListener("click", async () => {
 
       player.disconnect();
       player.connect(reverb);
-      player.connect(panner);
+      player.connect(panners[i]);
 
       player.start();
     });
@@ -242,7 +246,7 @@ startButton.addEventListener("click", async () => {
         if (audioOn === true && stable === true) {
           //if (audioOn === true && previousRot[previousRot.length - 2] === previousRot[previousRot.length - 1] && previousRot[previousRot.length - 3] !== previousRot[previousRot.length - 2]) {
           console.log("Changed Pan");
-          applyPan();
+          //applyPan();
         }
       }
     }, 1);
@@ -407,14 +411,15 @@ function applyPan() {
   calculatePan();
   if (audioOn === true) {
     players.forEach(function(player, i) {
-      let panner = new Tone.Panner(panValues[i]).toDestination();
+      panners[i].pan = panValues[i];
+      //let panner = new Tone.Panner(panValues[i]).toDestination();
       let reverb = new Tone.Reverb({
         decay: 2,
         wet: reverbValues[i]
       }).toDestination();
       player.disconnect();
       player.connect(reverb);
-      player.connect(panner);
+      player.connect(panners[i]);
       player.start();
     });
   } else {
