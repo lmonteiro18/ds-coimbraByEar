@@ -96,13 +96,34 @@ let escalas = [
   ]
 ];
 
+let synthOptions = {
+  oscillator: {
+    type: "sine",
+    volume: -50
+  },
+  envelope: {
+    attack: 1,
+    decay: 0.75,
+    sustain: 0.5,
+    release: 1
+  }
+};
+
+let synth1;
+let synth2;
+let synth3;
+
+let synthOn;
+
+let synthPart1;
+let synthPart2;
+let synthPart3;
+
 let notas1 = [];
 let notas2 = [];
 let notas3 = [];
 
 let audioOn = false;
-let print = false;
-let previousRot = [];
 
 let botoesAmplitude = document.querySelectorAll(".amplitude");
 let botoesSolo = document.querySelectorAll(".solo");
@@ -114,32 +135,24 @@ let aboutChanges = {};
 
 let loadedCount = 0;
 
-let players = [];
-let panners = [];
 let files;
 if (pagina === 1) {
-  console.log("Pagina 1");
   files = [
     "audio/pessoas_falar.mp3", "audio/passaros.mp3", "audio/mexer_agua.mp3",
     "audio/cascata_agua_01.mp3", "audio/carros.mp3"
   ];
 } else if (pagina === 0) {
-  console.log("Pagina 0");
   files = [
     "audio/pessoas_falar_baixa.mp3", "audio/musica_baixa.mp3", "audio/repuxo.mp3",
     "audio/carros_baixa.mp3", "audio/sino.mp3"
   ];
 }
 
-console.log("Pagina: " + pagina);
-console.log("Files: " + files);
-
 for (let i = 0; i < files.length; i++) {
   let player = new Tone.Player(files[i], function() {
     console.log("Audio loaded");
     loadedCount++
   });
-  player.autostart = true;
   player.loop = true;
   player.toDestination();
   players.push(player);
@@ -178,206 +191,231 @@ for (let i = 0; i < files.length; i++) {
 
 let noteButtons = document.querySelectorAll(".note");
 
-let shifts = ["-6", "-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5", "6"];
+//let shifts = ["-6", "-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5", "6"];
 let amplitudeValues = [0, 0, 0, 0, 0];
-let shiftIndexes = [6, 6, 6, 6, 6];
+//let shiftIndexes = [6, 6, 6, 6, 6];
 let reverbValues = [0, 0, 0, 0, 0];
 let distortionValues = [1, 1, 1, 1, 1];
 let panValues = [0, 0, 0, 0, 0];
-let panOffset = [0, 0, 0, 0, 0];
 
 document.addEventListener("keydown", changeParams);
 
-AFRAME.registerComponent('rotation-reader', {
-  tick: function() {
-    if (previousRot.length === 0 || previousRot[previousRot.length - 1] !== this.el.object3D.rotation._y) {
-      print = true;
-    }
-    previousRot.push(this.el.object3D.rotation._y);
-
-    if (print === true) {
-      let cameraRot = this.el.object3D.rotation._y;
-      let physicalSounds = document.querySelectorAll(".physicalSound");
-      physicalSounds.forEach((sound, i) => {
-        let relativeRotation = sound.object3D.rotation.y - 6.29 / 2;
-        let rotationDif = relativeRotation - (cameraRot % 6.29);
-        let min1 = -6.29;
-        let max1 = 0;
-        let reading;
-        //ajuste dos parâmetros que ultrapassam os limites
-        if (rotationDif > max1) {
-          reading = min1 + rotationDif;
-        } else if (rotationDif < min1) {
-          reading = rotationDif + 6.29;
-        } else {
-          reading = rotationDif;
-        }
-        //Pan mapping
-        let divisaoQuadrantes = 6.29 / 4;
-        let maxPan;
-        let minPan;
-        let maxReading;
-        let minReading;
-        if (reading >= min1 && reading <= min1 + divisaoQuadrantes) {
-          maxPan = -1;
-          minPan = 0;
-          maxReading = min1 + divisaoQuadrantes;
-          minReading = min1;
-          //console.log("First");
-        } else if (reading >= min1 + divisaoQuadrantes && reading <= min1 + divisaoQuadrantes * 2) {
-          maxPan = 0;
-          minPan = -1;
-          maxReading = min1 + divisaoQuadrantes * 2;
-          minReading = min1 + divisaoQuadrantes;
-          //console.log("Second");
-        } else if (reading >= min1 + divisaoQuadrantes * 2 && reading <= min1 + divisaoQuadrantes * 3) {
-          maxPan = 1;
-          minPan = 0;
-          maxReading = min1 + divisaoQuadrantes * 3;
-          minReading = min1 + divisaoQuadrantes * 2;
-          //console.log("Third");
-        } else {
-          maxPan = 0;
-          minPan = 1;
-          maxReading = max1;
-          minReading = min1 + divisaoQuadrantes * 3;
-          //console.log("Fourth");
-        }
-        let panMapping = (reading - minReading) / (maxReading - minReading);
-        let outputPan = panMapping * (maxPan - minPan) + minPan;
-        //console.log("Pan: " + outputPan);
-        //console.log("rotDif" + rotationDif);
-
-        panValues[i] = outputPan;
-      });
-      print = false;
-    }
-    if (previousRot.length >= 2) {
-      if (audioOn === true && previousRot[previousRot.length - 1] === this.el.object3D.rotation._y && previousRot[previousRot.length - 2] !== previousRot[previousRot.length - 1]) {
-        //console.log("Changed Pan");
-        applyPan();
-      }
-    }
-  }
-});
-
 let startButton = document.getElementById("StartButton");
+let synthButton = document.getElementById("SynthButton");
+
 startButton.addEventListener("click", async () => {
   await Tone.start()
+  audioOn = false;
   console.log('Audio is ready');
   if (loadedCount >= files.length) {
+    calculatePan();
     players.forEach((player, i) => {
-      let transpose_by = shifts[shiftIndexes[i]];
 
-      pitch_shift = new Tone.PitchShift({
-        pitch: transpose_by
+      let panner = new Tone.Panner(panValues[i]).toDestination();
+
+      let reverb = new Tone.Reverb({
+        decay: 2,
+        wet: reverbValues[i]
       }).toDestination();
 
-      let panner = new Tone.Panner().toDestination();
-      panner.pan.setValueAtTime(panValues[i], 0);
-
       player.disconnect();
-      player.connect(pitch_shift);
+      player.connect(reverb);
       player.connect(panner);
 
       player.start();
     });
-    let synthOptions = {
-      oscillator: {
-        volume: 0
-      },
-      envelope: {
-        attack: 1,
-        decay: 0.5,
-        sustain: 1,
-        release: 1
-      }
-    };
-    let synth1 = new Tone.Synth(synthOptions).toDestination();
-    let synth2 = new Tone.Synth(synthOptions).toDestination();
-    let synth3 = new Tone.Synth(synthOptions).toDestination();
 
-    let random1 = Math.floor(Math.random() * (1 - 0 + 1)) + 0;
-    let random2 = Math.floor(Math.random() * (3 - 2 + 1)) + 2;
-    let random3 = Math.floor(Math.random() * (6 - 0 + 1)) + 0;
-    notas1 = [];
-    notas2 = [];
-    notas3 = [];
-    for (let j = 0; j < 20; j++) {
-      let random4 = Math.floor(Math.random() * (7 - 0 + 1)) + 0;
-      let random5 = Math.floor(Math.random() * (7 - 0 + 1)) + 0;
-      let random6 = Math.floor(Math.random() * (7 - 0 + 1)) + 0;
-      if (random3 === 0) {
-        notas1.push(escalas[random1][random2].do[random4]);
-        notas2.push(escalas[random1][random2].do[random5]);
-        notas3.push(escalas[random1][random2].do[random6]);
-      } else if (random3 === 1) {
-        notas1.push(escalas[random1][random2].re[random4]);
-        notas2.push(escalas[random1][random2].re[random5]);
-        notas3.push(escalas[random1][random2].re[random6]);
-      } else if (random3 === 2) {
-        notas1.push(escalas[random1][random2].mi[random4]);
-        notas2.push(escalas[random1][random2].mi[random5]);
-        notas3.push(escalas[random1][random2].mi[random6]);
-      } else if (random3 === 3) {
-        notas1.push(escalas[random1][random2].fa[random4]);
-        notas2.push(escalas[random1][random2].fa[random5]);
-        notas3.push(escalas[random1][random2].fa[random6]);
-      } else if (random3 === 4) {
-        notas1.push(escalas[random1][random2].sol[random4]);
-        notas2.push(escalas[random1][random2].sol[random5]);
-        notas3.push(escalas[random1][random2].sol[random6]);
-      } else if (random3 === 5) {
-        notas1.push(escalas[random1][random2].la[random4]);
-        notas2.push(escalas[random1][random2].la[random5]);
-        notas3.push(escalas[random1][random2].la[random6]);
-      } else if (random3 === 6) {
-        notas1.push(escalas[random1][random2].si[random4]);
-        notas2.push(escalas[random1][random2].si[random5]);
-        notas3.push(escalas[random1][random2].si[random6]);
-      }
-    }
-    console.log(notas1, notas2, notas3);
-    let synthPart1 = new Tone.Sequence(
-      function(time, note) {
-        synth1.triggerAttackRelease(note, time);
-        console.log("A note");
-      },
-      notas1,
-      "2n"
-    );
-    let synthPart2 = new Tone.Sequence(
-      function(time, note) {
-        synths2.triggerAttackRelease(note, time);
-        console.log("A note");
-      },
-      notas2,
-      "2n"
-    );
-    let synthPart3 = new Tone.Sequence(
-      function(time, note) {
-        synth3.triggerAttackRelease(note, time);
-        console.log("A note");
-      },
-      notas3,
-      "2n"
-    );
-    synthPart1.start();
-    synthPart2.start();
-    synthPart3.start();
     audioOn = true;
+    let panInterval;
+    try {
+      if (panInterval !== undefined) {
+        clearInterval(panInterval);
+      }
+    } catch {
+      clearInterval(panInterval);
+    }
+    if (pagina === 1) {
+      playSynth();
+    }
+    panInterval = setInterval(() => {
+      if (previousRot.length >= 2) {
+        if (audioOn === true && stable === true) {
+          //if (audioOn === true && previousRot[previousRot.length - 2] === previousRot[previousRot.length - 1] && previousRot[previousRot.length - 3] !== previousRot[previousRot.length - 2]) {
+          console.log("Changed Pan");
+          applyPan();
+        }
+      }
+    }, 1);
   }
 });
 
+if (pagina === 1) {
+  synthButton.addEventListener("click", function() {
+    if (synthOn) {
+      Tone.Transport.stop();
+      synth1.volume.value = -75;
+      synth2.volume.value = -75;
+      synth3.volume.value = -75;
+      console.log("No volume");
+    } else {
+      Tone.Transport.start();
+      synth1.volume.value = 0;
+      synth2.volume.value = 0;
+      synth3.volume.value = 0;
+      console.log("Volume back");
+    }
+    synthOn = !synthOn;
+  });
+}
+
+function playSynth() {
+  console.log("Synths ready");
+  synth1 = new Tone.Synth(synthOptions).toDestination();
+  synth2 = new Tone.Synth(synthOptions).toDestination();
+  synth3 = new Tone.Synth(synthOptions).toDestination();
+
+  let random1 = Math.floor(Math.random() * (1 - 0 + 1)) + 0;
+  let random2 = Math.floor(Math.random() * (2 - 2 + 1)) + 2;
+  let random3 = Math.floor(Math.random() * (6 - 0 + 1)) + 0;
+  notas1 = [];
+  notas2 = [];
+  notas3 = [];
+  for (let j = 0; j < 20; j++) {
+    let random4 = Math.floor(Math.random() * (7 - 0 + 1)) + 0;
+    let random5 = Math.floor(Math.random() * (7 - 0 + 1)) + 0;
+    let random6 = Math.floor(Math.random() * (7 - 0 + 1)) + 0;
+    if (random3 === 0) {
+      notas1.push(escalas[random1][random2].do[random4]);
+      notas2.push(escalas[random1][random2].do[random5]);
+      notas3.push(escalas[random1][random2].do[random6]);
+    } else if (random3 === 1) {
+      notas1.push(escalas[random1][random2].re[random4]);
+      notas2.push(escalas[random1][random2].re[random5]);
+      notas3.push(escalas[random1][random2].re[random6]);
+    } else if (random3 === 2) {
+      notas1.push(escalas[random1][random2].mi[random4]);
+      notas2.push(escalas[random1][random2].mi[random5]);
+      notas3.push(escalas[random1][random2].mi[random6]);
+    } else if (random3 === 3) {
+      notas1.push(escalas[random1][random2].fa[random4]);
+      notas2.push(escalas[random1][random2].fa[random5]);
+      notas3.push(escalas[random1][random2].fa[random6]);
+    } else if (random3 === 4) {
+      notas1.push(escalas[random1][random2].sol[random4]);
+      notas2.push(escalas[random1][random2].sol[random5]);
+      notas3.push(escalas[random1][random2].sol[random6]);
+    } else if (random3 === 5) {
+      notas1.push(escalas[random1][random2].la[random4]);
+      notas2.push(escalas[random1][random2].la[random5]);
+      notas3.push(escalas[random1][random2].la[random6]);
+    } else if (random3 === 6) {
+      notas1.push(escalas[random1][random2].si[random4]);
+      notas2.push(escalas[random1][random2].si[random5]);
+      notas3.push(escalas[random1][random2].si[random6]);
+    }
+  }
+  //console.log(notas1, notas2, notas3);
+  synthPart1 = new Tone.Sequence(
+    function(time, note) {
+      synth1.triggerAttackRelease(note, time);
+    },
+    notas1,
+    "2n"
+  );
+  synthPart2 = new Tone.Sequence(
+    function(time, note) {
+      synth2.triggerAttackRelease(note, time);
+    },
+    notas2,
+    "2n"
+  );
+  synthPart3 = new Tone.Sequence(
+    function(time, note) {
+      synth3.triggerAttackRelease(note, time);
+    },
+    notas3,
+    "2n"
+  );
+  synthPart1.start();
+  synthPart2.start();
+  synthPart3.start();
+  Tone.Transport.bpm.value = 40;
+  Tone.Transport.start();
+  synthOn = true;
+}
+
+function calculatePan() {
+  let cameraRot = previousRot[previousRot.length - 1];
+  let physicalSounds = document.querySelectorAll(".physicalSound");
+  physicalSounds.forEach((sound, i) => {
+    let relativeRotation = sound.object3D.rotation.y - 6.29 / 2;
+    let rotationDif = relativeRotation - (cameraRot % 6.29);
+    let min1 = -6.29;
+    let max1 = 0;
+    let reading;
+    //ajuste dos parâmetros que ultrapassam os limites
+    if (rotationDif > max1) {
+      reading = min1 + rotationDif;
+    } else if (rotationDif < min1) {
+      reading = rotationDif + 6.29;
+    } else {
+      reading = rotationDif;
+    }
+    //Pan mapping
+    let divisaoQuadrantes = 6.29 / 4;
+    let maxPan;
+    let minPan;
+    let maxReading;
+    let minReading;
+    if (reading >= min1 && reading <= min1 + divisaoQuadrantes) {
+      maxPan = -1;
+      minPan = 0;
+      maxReading = min1 + divisaoQuadrantes;
+      minReading = min1;
+      //console.log("First");
+    } else if (reading >= min1 + divisaoQuadrantes && reading <= min1 + divisaoQuadrantes * 2) {
+      maxPan = 0;
+      minPan = -1;
+      maxReading = min1 + divisaoQuadrantes * 2;
+      minReading = min1 + divisaoQuadrantes;
+      //console.log("Second");
+    } else if (reading >= min1 + divisaoQuadrantes * 2 && reading <= min1 + divisaoQuadrantes * 3) {
+      maxPan = 1;
+      minPan = 0;
+      maxReading = min1 + divisaoQuadrantes * 3;
+      minReading = min1 + divisaoQuadrantes * 2;
+      //console.log("Third");
+    } else {
+      maxPan = 0;
+      minPan = 1;
+      maxReading = max1;
+      minReading = min1 + divisaoQuadrantes * 3;
+      //console.log("Fourth");
+    }
+    let panMapping = (reading - minReading) / (maxReading - minReading);
+    let outputPan = panMapping * (maxPan - minPan) + minPan;
+    //console.log("Pan: " + outputPan);
+    //console.log("rotDif" + rotationDif);
+
+    panValues[i] = outputPan;
+  });
+  console.log(panValues);
+  print = false;
+}
+
 function applyPan() {
+  calculatePan();
   if (audioOn === true) {
     players.forEach(function(player, i) {
       let panner = new Tone.Panner(panValues[i]).toDestination();
+      let reverb = new Tone.Reverb({
+        decay: 2,
+        wet: reverbValues[i]
+      }).toDestination();
       player.disconnect();
+      player.connect(reverb);
       player.connect(panner);
       player.start();
-      player.volume.value = amplitudeValues[i] + 20;
-      console.log(panValues);
     });
   } else {
     console.log("Not on");
@@ -429,7 +467,6 @@ function changeParams(evt) {
         console.log("All: " + aboutChanges.index);
       }
       break;
-
 
     case "reverberacao":
       let previousReverb = reverbValues[aboutChanges.index];
