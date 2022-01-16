@@ -10,7 +10,7 @@
   <!-- Environent Component -->
   <script src="https://unpkg.com/aframe-environment-component@1.1.0/dist/aframe-environment-component.min.js"></script>
 
-  <!-- Look At Component -->
+  <!-- Look-at Component -->
   <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
 
   <!-- Webcentric Component -->
@@ -25,38 +25,32 @@
 <body>
   <a-scene webcentric cursor="rayOrigin: mouse">
     <a-entity id="camerarig">
-      <a-camera id="camera" wasd-controls-enabled="false">
+      <a-camera id="camera" wasd-controls-enabled="false" rotation-reader>
         <a-cursor></a-cursor>
       </a-camera>
     </a-entity>
 
-    <a-assets>
+    <!-- Ficheiros externos -->
+    <a-assets id="Assets">
+      <!-- Imagens -->
       <img id="praca8Maio" src="images/praca_8Maio.png"></img>
       <img id="jardimBotanico" src="images/jardimBotanico.png"></img>
     </a-assets>
 
     <a-entity position="0 0 0">
       <a-entity position="0 0 0">
-        <a-link href="#cameraPos=-10000,0,0" link="visualAspectEnabled:false" position="-2 1.6 -8" rotation="0 0 0" scale="1 1 1" src="#praca8Maio">
+        <a-link href="/praca" link="visualAspectEnabled:false" position="-2 1.6 -8" rotation="0 0 0" scale="1 1 1" src="#praca8Maio">
           <a-sphere src="#praca8Maio" radius="1"></a-sphere>
           <a-text align="center" position="0 1.5 0" value="Praca 8 de Maio"></a-text>
         </a-link>
       </a-entity>
       <a-entity position="0 0 0">
-        <a-link href="#cameraPos=10000,0,0" link="visualAspectEnabled:false" position="2 1.6 -8" rotation="0 0 0" scale="1 1 1" src="#praca8Maio">
+        <a-link href="/jardim" link="visualAspectEnabled:false" position="2 1.6 -8" rotation="0 0 0" scale="1 1 1" src="#praca8Maio">
           <a-sphere src="#jardimBotanico" radius="1"></a-sphere>
           <a-text align="center" position="0 1.5 0" value="Jardim Botanico"></a-text>
         </a-link>
       </a-entity>
       <a-sky color="lightblue"></a-sky>
-    </a-entity>
-
-    <a-entity position="-10000 0 0">
-      <a-sky src="#praca8Maio"></a-sky>
-    </a-entity>
-
-    <a-entity position="10000 0 0">
-      <a-sky src="#jardimBotanico"></a-sky>
     </a-entity>
   </a-scene>
 </body>

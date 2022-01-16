@@ -1,34 +1,39 @@
+//--------------------------------------------MODULES AND APP SETUP--------------------------------------------
 const express = require("express");
+const ejs = require("ejs");
 const bodyParser = require("body-parser");
 
 const app = express();
+app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(express.static("public"));
 
 
+
+//--------------------------------------------GET MAIN ROUTE--------------------------------------------
 app.get("/", function(req, res) {
-  res.sendFile(__dirname + "/index.html");
+  res.render("index", {});
 });
 
-app.get("/escola", function(req, res) {
-  res.sendFile(__dirname + "/escola.html");
+app.get("/praca", function(req, res) {
+  res.render("praca", {});
 });
 
-app.get("/ancas", function(req, res) {
-  res.sendFile(__dirname + "/ancas.html");
-});
-
-app.get("/pavilhao", function(req, res) {
-  res.sendFile(__dirname + "/pavilhao.html");
-});
-
-app.get("/dei", function(req, res) {
-  res.sendFile(__dirname + "/dei.html");
+app.get("/jardim", function(req, res) {
+  res.render("jardim", {});
 });
 
 
-app.listen(process.env.PORT || 3000, function() {
-  console.log("Server is up and running on port " + (process.env.PORT || 3000) + ".");
+
+
+//--------------------------------------------PORTS AND APP LISTEN--------------------------------------------
+let port = process.env.PORT;
+if (port === undefined || port === "") {
+  port = 3000;
+}
+
+app.listen(port, function() {
+  console.log("Server is up and running on port " + port + ".");
 });

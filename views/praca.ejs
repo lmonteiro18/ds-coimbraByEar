@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+
+  <!-- A-frame script -->
+  <script src="https://aframe.io/releases/1.1.0/aframe.min.js"></script>
+
+  <!-- Look-at Component -->
+  <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+
+  <!-- Webcentric Component -->
+  <script src="https://unpkg.com/aframe-webcentric-component/dist/aframe-webcentric-component.min.js"></script>
+
+  <!-- Event-set Component -->
+  <!--<script src="https://unpkg.com/aframe-event-set-component/dist/aframe-event-set-component.min.js"></script>-->
+
+  <title>Coimbra By Ear</title>
+</head>
+
+<body>
+  <a-scene webcentric cursor="rayOrigin: mouse">
+    <a-entity id="camerarig">
+      <a-camera id="camera" wasd-controls-enabled="false" rotation-reader>
+        <a-cursor></a-cursor>
+      </a-camera>
+    </a-entity>
+
+    <!-- Ficheiros externos -->
+    <a-assets id="Assets">
+      <!-- Imagens -->
+      <img id="praca8Maio" src="images/praca_8Maio.png"></img>
+    </a-assets>
+
+    <!-- Formas geométricas da Praça 8 de Maio -->
+    <a-entity position="0 0 0">
+      <a-entity rotation="0 -20 0">
+        <a-entity position="0 -2 -15">
+          <a-entity class="infopanel" look-at="#camera" position="0 7 0">
+            <%- include("./partials/infoPanel") -%>
+          </a-entity>
+          <a-entity id="StartButton" look-at="#camera">
+            <a-plane width="8" height="2" color="black"></a-plane>
+            <a-text position="0 0 0.01" color="white" value="Click to start audio" width="16" align="center"></a-text>
+          </a-entity>
+        </a-entity>
+      </a-entity>
+      <!-- Pessoas no café -->
+      <a-entity class="physicalSound" rotation="0 -50 0">
+        <a-entity position="0 3 20" look-at="#camera">
+          <a-circle radius="2" scale="1 1 1" material="side: double; color:lightblue; transparent: true; opacity: 0.85"></a-circle>
+          <%- include("./partials/botoesParametros") -%>
+        </a-entity>
+      </a-entity>
+      <!-- Música de rua -->
+      <a-entity class="physicalSound" rotation="0 -125 0">
+        <a-entity position="0 -2 15" look-at="#camera">
+          <a-circle radius="2" scale="1 1 1" material="side: double; color:lightblue; transparent: true; opacity: 0.85"></a-circle>
+          <%- include("./partials/botoesParametros") -%>
+        </a-entity>
+      </a-entity>
+      <!-- Repuxo -->
+      <a-entity class="physicalSound" rotation="0 -165 0">
+        <a-entity position="0 -1 15" look-at="#camera">
+          <a-circle radius="2" scale="1 1 1" material="side: double; color:lightblue; transparent: true; opacity: 0.85"></a-circle>
+          <%- include("./partials/botoesParametros") -%>
+        </a-entity>
+      </a-entity>
+      <!-- Carros -->
+      <a-entity class="physicalSound" rotation="0 -260 0">
+        <a-entity position="0 2 20" look-at="#camera">
+          <a-circle radius="2" scale="1 1 1" material="side: double; color:lightblue; transparent: true; opacity: 0.85"></a-circle>
+          <%- include("./partials/botoesParametros") -%>
+        </a-entity>
+      </a-entity>
+      <!-- Sino a tocar -->
+      <a-entity class="physicalSound" rotation="0 -335 0">
+        <a-entity position="0 20 15" look-at="#camera">
+          <a-circle radius="2" scale="1 1 1" material="side: double; color:lightblue; transparent: true; opacity: 0.85"></a-circle>
+          <%- include("./partials/botoesParametros") -%>
+        </a-entity>
+      </a-entity>
+    </a-entity>
+
+    <!-- Sky da Praça 8 de Maio -->
+    <a-entity position="0 0 0">
+      <a-sphere src="#praca8Maio" radius="1000" scale="1 1 -1" side="double"></a-sphere>
+    </a-entity>
+  </a-scene>
+
+  <script src="js/Tone.js"></script>
+  <script>
+    let pagina = 0;
+  </script>
+  <script src="js/audio.js"></script>
+</body>
+
+</html>
